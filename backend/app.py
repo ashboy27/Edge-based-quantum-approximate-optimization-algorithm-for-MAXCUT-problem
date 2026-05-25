@@ -1,47 +1,23 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import networkx as nx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .edge_qaoa import optimize_qaoa, sample_solution
-from .graph_utils import cut_value_from_vertex_labels
-from .tree_heuristic import build_greedy_heuristic_spanning_tree, build_star_tree
-
-
-class EdgeInput(BaseModel):
-    u: int
-    v: int
-
+from .tree_generation import build_greedy_heuristic_spanning_tree, build_star_tree
 
 class EvaluateRequest(BaseModel):
-    nodeCount: int = Field(..., ge=2)
-    edges: list[EdgeInput]
-    zeroBased: bool = True
-    pMax: int = Field(3, ge=1, le=5)
-    shots: int = Field(1024, ge=128, le=8192)
-    maxIter: int = Field(60, ge=10, le=300)
-
-
-class ModeResult(BaseModel):
-    mode: str
-    root: int
-    treeEdges: list[list[int]]
-    approxRatios: list[float | None]
-    sampledCuts: list[float]
-    histogram: dict[str, int]
-
-
-class EvaluateResponse(BaseModel):
     nodeCount: int
-    edgeCount: int
-    maxCut: float | None
-    results: list[ModeResult]
+    edges: list[tuple[int, int]]
+    zeroBased: bool = True
+    pMax: int = 3
+    shots: int = 1024
+    maxIter: int = 60
 
 
 app = FastAPI(title="Edge-Based QAOA Max-Cut")
@@ -64,9 +40,20 @@ def flutter_service_worker() -> Response:
     return Response(status_code=204)
 
 
+def validate_evaluate_request(request_payload: EvaluateRequest) -> None:
+    if request_payload.nodeCount < 2:
+        raise HTTPException(status_code=400, detail="nodeCount must be >= 2.")
+    if not (1 <= request_payload.pMax <= 5):
+        raise HTTPException(status_code=400, detail="pMax must be between 1 and 5.")
+    if not (128 <= request_payload.shots <= 8192):
+        raise HTTPException(status_code=400, detail="shots must be between 128 and 8192.")
+    if not (10 <= request_payload.maxIter <= 300):
+        raise HTTPException(status_code=400, detail="maxIter must be between 10 and 300.")
+
+
 def build_graph(
     node_count: int,
-    edge_list: list[EdgeInput],
+    edge_list: list[tuple[int, int]],
     zero_based_indexing_enabled: bool,
 ) -> nx.Graph:
     nodes_in_graph = range(node_count)
@@ -74,9 +61,9 @@ def build_graph(
     graph_built_from_user_input.add_nodes_from(nodes_in_graph)
 
     index_base_offset = 0 if zero_based_indexing_enabled else 1
-    for edge in edge_list:
-        source_node_index = edge.u - index_base_offset
-        target_node_index = edge.v - index_base_offset
+    for edge_u, edge_v in edge_list:
+        source_node_index = edge_u - index_base_offset
+        target_node_index = edge_v - index_base_offset
         if (
             source_node_index < 0
             or target_node_index < 0
@@ -115,7 +102,7 @@ def evaluate_mode(
     number_of_shots: int,
     maximum_iterations_choosen_by_user: int,
     actual_max_cut_dervied_from_brute_force: float | None,
-) -> ModeResult:
+) -> dict[str, object]:
     if mode == "heuristic":
         spanning_tree, root_node = build_greedy_heuristic_spanning_tree(graph_built_from_user_input_normalized)
     else:
@@ -164,18 +151,20 @@ def evaluate_mode(
         if qaoa_depth == maximum_qaoa_depth:
             histogram_by_bitstring = bitstring_counts
 
-    return ModeResult(
-        mode=mode,
-        root=root_node,
-        treeEdges=[[node_u, node_v] for node_u, node_v in spanning_tree.edges()],
-        approxRatios=approximation_ratios,
-        sampledCuts=sampled_cut_values,
-        histogram=histogram_by_bitstring,
-    )
+    return {
+        "mode": mode,
+        "root": root_node,
+        "treeEdges": [[node_u, node_v] for node_u, node_v in spanning_tree.edges()],
+        "approxRatios": approximation_ratios,
+        "sampledCuts": sampled_cut_values,
+        "histogram": histogram_by_bitstring,
+    }
 
 
-@app.post("/evaluate", response_model=EvaluateResponse)
-def evaluate(request_payload: EvaluateRequest) -> EvaluateResponse:
+@app.post("/evaluate")
+def evaluate(request_payload: EvaluateRequest) -> dict[str, object]:
+    validate_evaluate_request(request_payload)
+
     graph_built_from_user_input_normalized = build_graph(
         request_payload.nodeCount,
         request_payload.edges,
@@ -204,9 +193,9 @@ def evaluate(request_payload: EvaluateRequest) -> EvaluateResponse:
         ),
     ]
 
-    return EvaluateResponse(
-        nodeCount=request_payload.nodeCount,
-        edgeCount=graph_built_from_user_input_normalized.number_of_edges(),
-        maxCut=actual_max_cut_dervied_from_brute_force,
-        results=results,
-    )
+    return {
+        "nodeCount": request_payload.nodeCount,
+        "edgeCount": graph_built_from_user_input_normalized.number_of_edges(),
+        "maxCut": actual_max_cut_dervied_from_brute_force,
+        "results": results,
+    }

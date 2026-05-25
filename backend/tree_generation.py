@@ -1,4 +1,3 @@
-from collections import deque
 import networkx as nx
 
 
@@ -102,34 +101,3 @@ def build_greedy_heuristic_spanning_tree(input_graph: nx.Graph) -> tuple[nx.Grap
         node_depths[child_node] = node_depths[parent_node] + 1
 
     return heuristic_spanning_tree, root_node
-
-
-def tree_edge_index(spanning_tree: nx.Graph) -> dict[frozenset, int]:
-    """
-    Map each tree edge to a qubit index.
-    """
-    tree_edge_index_map: dict[frozenset, int] = {}
-    edge_counter = 0
-    for node_u, node_v in spanning_tree.edges():
-        tree_edge_index_map[frozenset((node_u, node_v))] = edge_counter
-        edge_counter += 1
-    return tree_edge_index_map
-
-
-def path_qubits(
-    start_node: int,
-    end_node: int,
-    spanning_tree: nx.Graph,
-    tree_edge_index_map: dict[frozenset, int],
-) -> list[int]:
-    """
-    Get qubit indices along the unique tree path between u and v.
-    """
-    shortest_path_nodes = nx.shortest_path(spanning_tree, start_node, end_node)
-    qubit_indices: list[int] = []
-    for path_index in range(len(shortest_path_nodes) - 1):
-        node_a = shortest_path_nodes[path_index]
-        node_b = shortest_path_nodes[path_index + 1]
-        qubit_index = tree_edge_index_map[frozenset((node_a, node_b))]
-        qubit_indices.append(qubit_index)
-    return qubit_indices

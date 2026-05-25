@@ -3,91 +3,16 @@ import networkx as nx
 from collections import deque
 from scipy.optimize import minimize
 
-from qiskit import QuantumCircuit, transpile
+from qiskit import transpile
 from qiskit.quantum_info import Statevector
 from qiskit_aer import AerSimulator
 
-from .graph_utils import cut_value_from_vertex_labels
-from .tree_heuristic import tree_edge_index, path_qubits
-
-
-def apply_multi_z_phase(
-    quantum_circuit: QuantumCircuit,
-    qubit_path_indices: list[int],
-    gamma_angle: float,
-) -> None:
-    """
-    Implement the paper's path-based Z / ZZ / ZZZ ... phase term.
-
-    Step 3 in the paper:
-    - for each original edge (u,v), apply the Hamiltonian term based on path length
-      in the assigned spanning tree Ge.
-
-    Here:
-    - length 1 => single RZ
-    - length 2 => ZZ-type phase via 2 CNOTs + RZ + 2 CNOTs
-    - length 3+ => general parity-encoding chain
-    """
-    if len(qubit_path_indices) == 1:
-        quantum_circuit.rz(-gamma_angle, qubit_path_indices[0])
-        return
-
-    for qubit_index in range(len(qubit_path_indices) - 1):
-        quantum_circuit.cx(
-            qubit_path_indices[qubit_index],
-            qubit_path_indices[qubit_index + 1],
-        )
-
-    quantum_circuit.rz(-gamma_angle, qubit_path_indices[-1])
-
-    for qubit_index in range(len(qubit_path_indices) - 2, -1, -1):
-        quantum_circuit.cx(
-            qubit_path_indices[qubit_index],
-            qubit_path_indices[qubit_index + 1],
-        )
-
-
-def build_qaoa_circuit(
-    input_graph: nx.Graph,
-    spanning_tree: nx.Graph,
-    qaoa_depth: int,
-    parameter_vector: np.ndarray,
-) -> QuantumCircuit:
-    """
-    Build the edge-based QAOA circuit.
-
-    Paper step mapping:
-    1) choose edge-assigned graph Ge (handled outside)
-    2) prepare |+>^{⊗(n-1)}
-    3) apply problem Hamiltonian HP and mixing Hamiltonian HM
-    4) repeat for p layers
-    """
-    number_of_qubits = spanning_tree.number_of_edges()
-    tree_edge_index_map = tree_edge_index(spanning_tree)
-    beta_angles = parameter_vector[:qaoa_depth]
-    gamma_angles = parameter_vector[qaoa_depth:]
-
-    quantum_circuit = QuantumCircuit(number_of_qubits)
-
-    # Paper step 2: prepare n-1 qubits in |+> state
-    for qubit_index in range(number_of_qubits):
-        quantum_circuit.h(qubit_index)
-
-    # Paper step 4: repeat p levels
-    for layer_index in range(qaoa_depth):
-        gamma_angle = gamma_angles[layer_index]
-        beta_angle = beta_angles[layer_index]
-
-        # Paper step 3: problem Hamiltonian over all original graph edges
-        for node_u, node_v in input_graph.edges():
-            path_qubit_indices = path_qubits(node_u, node_v, spanning_tree, tree_edge_index_map)
-            apply_multi_z_phase(quantum_circuit, path_qubit_indices, gamma_angle)
-
-        # Paper step 3: mixing Hamiltonian
-        for qubit_index in range(number_of_qubits):
-            quantum_circuit.rx(2.0 * beta_angle, qubit_index)
-
-    return quantum_circuit
+from .utils import (
+    build_qaoa_circuit,
+    cut_value_from_vertex_labels,
+    path_qubits,
+    tree_edge_index,
+)
 
 
 def bits_to_vertex_labels(

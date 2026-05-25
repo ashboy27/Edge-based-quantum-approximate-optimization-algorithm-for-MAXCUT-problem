@@ -36,7 +36,7 @@ export function normalizeEdgesForPayload(edges, zeroBased) {
     const [aStr, bStr] = key.split("-");
     const a = parseInt(aStr, 10) + base;
     const b = parseInt(bStr, 10) + base;
-    return { u: a, v: b };
+    return [a, b];
   });
 }
 

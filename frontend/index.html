@@ -20,7 +20,8 @@
 
                 <h1>Quantum Approximate Optimization Algorithm for Unweighted MAX-CUT</h1>
                 <p class="subhead">
-                    Compare methods of spanning tree on Variational Quantum Eigensolver (VQE) applied to the unweighted MAX-CUT problem.
+                    Compare methods of spanning tree on Variational Quantum Eigensolver (VQE) applied to the unweighted
+                    MAX-CUT problem.
                 </p>
             </div>
         </header>
@@ -97,7 +98,20 @@
                 <h2>Spanning tree preview</h2>
                 <div class="status" id="previewStatus">Ready.</div>
             </div>
-            <canvas id="previewTree" width="880" height="320"></canvas>
+            <div class="preview-grid">
+                <div class="preview-card">
+                    <h3>Star initialization</h3>
+                    <canvas class="treeCanvas" id="previewStarTree" width="380" height="240"></canvas>
+                </div>
+                <div class="preview-card">
+                    <h3>Heuristic initialization</h3>
+                    <canvas class="treeCanvas" id="previewHeurTree" width="380" height="240"></canvas>
+                </div>
+            </div>
+            <div class="inline-loading" id="inlineLoading" hidden>
+                <div class="spinner" aria-hidden="true"></div>
+                <p>Training QAOA...</p>
+            </div>
         </section>
 
         <section class="panel results" id="resultsSection" hidden>
@@ -109,7 +123,6 @@
             <div class="results-grid">
                 <div class="result-card" id="starCard">
                     <h3>Star initialization</h3>
-                    <canvas class="treeCanvas" id="starTree" width="380" height="240"></canvas>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="starHist"></div>
@@ -122,7 +135,6 @@
 
                 <div class="result-card" id="heurCard">
                     <h3>Heuristic initialization</h3>
-                    <canvas class="treeCanvas" id="heurTree" width="380" height="240"></canvas>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="heurHist"></div>
@@ -150,13 +162,6 @@
                 <button id="cancelConfirm" class="btn" type="button">Cancel</button>
                 <button id="confirmTrain" class="btn primary" type="button">Confirm</button>
             </div>
-        </div>
-    </div>
-
-    <div class="loading-backdrop" id="loadingOverlay" aria-hidden="true">
-        <div class="loading-card">
-            <div class="spinner" aria-hidden="true"></div>
-            <p>Training QAOA...</p>
         </div>
     </div>
 

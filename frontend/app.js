@@ -9,7 +9,6 @@ import {
 } from "./modules/graphRender.js";
 import { parseEdgeList } from "./modules/graphParser.js";
 import {
-  buildSpanningTreeEdges,
   edgeCount,
   normalizeEdgesForPayload,
 } from "./modules/graphAlgo.js";
@@ -33,12 +32,13 @@ const modeButtons = document.querySelectorAll(".mode-btn");
 const modePanels = document.querySelectorAll(".mode-panel");
 const previewSection = document.getElementById("previewSection");
 const resultsSection = document.getElementById("resultsSection");
-const previewTree = document.getElementById("previewTree");
+const previewStarTree = document.getElementById("previewStarTree");
+const previewHeurTree = document.getElementById("previewHeurTree");
+const inlineLoading = document.getElementById("inlineLoading");
 
 const confirmModal = document.getElementById("confirmModal");
 const cancelConfirm = document.getElementById("cancelConfirm");
 const confirmTrain = document.getElementById("confirmTrain");
-const loadingOverlay = document.getElementById("loadingOverlay");
 
 const summaryMode = document.getElementById("summaryMode");
 const summaryNodes = document.getElementById("summaryNodes");
@@ -46,8 +46,6 @@ const summaryEdges = document.getElementById("summaryEdges");
 const summaryP = document.getElementById("summaryP");
 const summaryShots = document.getElementById("summaryShots");
 
-const starTree = document.getElementById("starTree");
-const heurTree = document.getElementById("heurTree");
 const starHist = document.getElementById("starHist");
 const heurHist = document.getElementById("heurHist");
 const starRatio = document.getElementById("starRatio");
@@ -202,8 +200,7 @@ function closeConfirmModal() {
 }
 
 function setLoading(isLoading) {
-  loadingOverlay.classList.toggle("is-open", isLoading);
-  loadingOverlay.setAttribute("aria-hidden", isLoading ? "false" : "true");
+  inlineLoading.hidden = !isLoading;
 }
 
 function validateGraph() {
@@ -212,11 +209,10 @@ function validateGraph() {
   return null;
 }
 
-function showPreviewTree() {
-  const treeEdges = buildSpanningTreeEdges(state.nodes.length, state.edges);
+function showPreviewSection() {
   previewSection.hidden = false;
-  updatePreviewStatus("Preview ready.");
-  drawTree(previewTree, state.nodes, treeEdges, state.zeroBased);
+  updatePreviewStatus("Initializing spanning trees...");
+  previewSection.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function trainGraph() {
@@ -230,6 +226,7 @@ async function trainGraph() {
   };
 
   trainBtn.disabled = true;
+  resultsSection.hidden = true;
   resultStatus.textContent = "Training QAOA...";
   setLoading(true);
 
@@ -251,18 +248,20 @@ async function trainGraph() {
 
     data.results.forEach((result) => {
       if (result.mode === "star") {
-        drawTree(starTree, state.nodes, result.treeEdges, state.zeroBased);
+        drawTree(previewStarTree, state.nodes, result.treeEdges, state.zeroBased);
         renderHistogram(starHist, result.histogram);
         drawLineChart(starRatio, result.approxRatios);
       } else {
-        drawTree(heurTree, state.nodes, result.treeEdges, state.zeroBased);
+        drawTree(previewHeurTree, state.nodes, result.treeEdges, state.zeroBased);
         renderHistogram(heurHist, result.histogram);
         drawLineChart(heurRatio, result.approxRatios);
       }
     });
+    updatePreviewStatus("Spanning trees ready.");
   } catch (err) {
     resultsSection.hidden = false;
     resultStatus.textContent = err.message;
+    updatePreviewStatus("Training failed.");
   } finally {
     trainBtn.disabled = false;
     setLoading(false);
@@ -319,7 +318,7 @@ trainBtn.addEventListener("click", () => {
 cancelConfirm.addEventListener("click", closeConfirmModal);
 confirmTrain.addEventListener("click", () => {
   closeConfirmModal();
-  showPreviewTree();
+  showPreviewSection();
   trainGraph();
 });
 

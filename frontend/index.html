@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edge-Based QAOA Max-Cut</title>
+    <title>QAOA Max-Cut</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,99 +15,118 @@
 
 <body>
     <div class="page">
-        <header class="hero">
+        <header class="hero minimal">
             <div>
-                <h1>QAOA Max-Cut Studio</h1>
+                <div class="eyebrow">QAOA Max-Cut</div>
+                <h1>Minimal Graph Input</h1>
                 <p class="subhead">
-                    Draw a graph, choose indexing, and compare star vs heuristic spanning trees
-                    with QAOA results.
+                    Choose your input style, confirm the parameters, and then train.
                 </p>
             </div>
         </header>
 
-        <main class="layout">
-            <section class="panel controls">
-                <h2>Graph Builder</h2>
-                <div class="control-group">
-                    <label class="switch">
-                        <input id="zeroBasedToggle" type="checkbox" checked />
-                        <span class="slider"></span>
-                    </label>
-                    <span class="switch-label">0-based labels</span>
+        <main class="input-shell">
+            <section class="panel input-panel">
+                <div class="mode-toggle" role="tablist" aria-label="Input mode">
+                    <button class="mode-btn is-active" data-mode="draw" type="button">Draw graph</button>
+                    <button class="mode-btn" data-mode="paste" type="button">Paste edges</button>
                 </div>
 
-                <div class="control-row">
-                    <button id="addNodeBtn" class="btn primary">Add Node</button>
-                    <button id="removeNodeBtn" class="btn">Remove Node</button>
-                </div>
+                <div class="input-grid">
+                    <div class="input-controls">
+                        <div class="control-group">
+                            <label class="switch">
+                                <input id="zeroBasedToggle" type="checkbox" checked />
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-label">0-based labels</span>
+                        </div>
 
-                <div class="control-row">
-                    <button id="addEdgeBtn" class="btn accent">Add Edge</button>
-                    <button id="removeEdgeBtn" class="btn">Remove Edge</button>
-                </div>
+                        <div class="control-group mode-panel" data-mode-panel="draw">
+                            <div class="control-row">
+                                <button id="addNodeBtn" class="btn primary" type="button">Add node</button>
+                                <button id="removeNodeBtn" class="btn" type="button">Remove node</button>
+                            </div>
+                            <div class="control-row">
+                                <button id="addEdgeBtn" class="btn" type="button">Add edge</button>
+                                <button id="removeEdgeBtn" class="btn" type="button">Remove edge</button>
+                            </div>
+                            <div class="hint">Click nodes to select. Select two nodes to add or remove an edge.</div>
+                        </div>
 
-                <div class="control-group">
-                    <label for="pMax">Max QAOA level (p)</label>
-                    <input id="pMax" type="range" min="1" max="5" value="3" />
-                    <div class="range-value">p = <span id="pMaxValue">3</span></div>
-                </div>
+                        <div class="control-group mode-panel is-hidden" data-mode-panel="paste">
+                            <label for="edgeList">Edge list</label>
+                            <textarea id="edgeList" rows="8" placeholder="0 1\n1 2\n2 3"></textarea>
+                            <div class="hint">Use spaces, commas, or hyphens between node labels.</div>
+                        </div>
 
-                <div class="control-group">
-                    <label for="shots">Shots</label>
-                    <input id="shots" type="number" min="128" max="8192" value="1024" />
-                </div>
+                        <div class="control-group">
+                            <label for="pMax">Max QAOA level (p)</label>
+                            <input id="pMax" type="range" min="1" max="5" value="3" />
+                            <div class="range-value">p = <span id="pMaxValue">3</span></div>
+                        </div>
 
-                <div class="control-group">
-                    <label for="maxIter">Optimizer iterations (COBYLA)</label>
-                    <input id="maxIter" type="number" min="10" max="300" value="60" />
-                </div>
+                        <div class="control-group">
+                            <label for="shots">Shots</label>
+                            <input id="shots" type="number" min="128" max="8192" value="1024" />
+                        </div>
 
-                <button id="evaluateBtn" class="btn primary wide">Evaluate</button>
+                        <div class="control-group">
+                            <label for="maxIter">Optimizer iterations (COBYLA)</label>
+                            <input id="maxIter" type="number" min="10" max="300" value="60" />
+                        </div>
 
-                <div class="hint">
-                    <p>Click nodes to select. Select two nodes to add or remove an edge.</p>
-                    <p>Removing a node renumbers the remaining nodes.</p>
-                </div>
-            </section>
+                        <button id="trainBtn" class="btn primary wide" type="button">Train</button>
+                    </div>
 
-            <section class="panel canvas-area">
-                <div class="canvas-header">
-                    <h2>Draw Graph</h2>
-                    <div class="status" id="statusText">No nodes yet.</div>
+                    <div class="input-canvas">
+                        <div class="canvas-header">
+                            <h2>Input preview</h2>
+                            <div class="status" id="statusText">No nodes yet.</div>
+                        </div>
+                        <canvas id="graphCanvas" width="880" height="520"></canvas>
+                    </div>
                 </div>
-                <canvas id="graphCanvas" width="880" height="520"></canvas>
             </section>
         </main>
 
-        <section class="panel results">
+        <section class="panel preview" id="previewSection" hidden>
+            <div class="preview-header">
+                <h2>Spanning tree preview</h2>
+                <div class="status" id="previewStatus">Ready.</div>
+            </div>
+            <canvas id="previewTree" width="880" height="320"></canvas>
+        </section>
+
+        <section class="panel results" id="resultsSection" hidden>
             <div class="results-header">
                 <h2>Results</h2>
-                <div class="status" id="resultStatus">Run evaluation to see output.</div>
+                <div class="status" id="resultStatus">Run training to see output.</div>
             </div>
 
             <div class="results-grid">
                 <div class="result-card" id="starCard">
-                    <h3>Star Initialization</h3>
+                    <h3>Star initialization</h3>
                     <canvas class="treeCanvas" id="starTree" width="380" height="240"></canvas>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="starHist"></div>
                     </div>
                     <div class="plot">
-                        <h4>Approximation Ratio</h4>
+                        <h4>Approximation ratio</h4>
                         <canvas class="lineChart" id="starRatio" width="380" height="160"></canvas>
                     </div>
                 </div>
 
                 <div class="result-card" id="heurCard">
-                    <h3>Heuristic Initialization</h3>
+                    <h3>Heuristic initialization</h3>
                     <canvas class="treeCanvas" id="heurTree" width="380" height="240"></canvas>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="heurHist"></div>
                     </div>
                     <div class="plot">
-                        <h4>Approximation Ratio</h4>
+                        <h4>Approximation ratio</h4>
                         <canvas class="lineChart" id="heurRatio" width="380" height="160"></canvas>
                     </div>
                 </div>
@@ -115,7 +134,31 @@
         </section>
     </div>
 
-    <script src="/static/app.js"></script>
+    <div class="modal-backdrop" id="confirmModal" aria-hidden="true">
+        <div class="modal">
+            <h3>Confirm training</h3>
+            <div class="modal-summary">
+                <div class="summary-row"><span>Mode</span><strong id="summaryMode">Draw graph</strong></div>
+                <div class="summary-row"><span>Nodes</span><strong id="summaryNodes">0</strong></div>
+                <div class="summary-row"><span>Edges</span><strong id="summaryEdges">0</strong></div>
+                <div class="summary-row"><span>p</span><strong id="summaryP">3</strong></div>
+                <div class="summary-row"><span>Shots</span><strong id="summaryShots">1024</strong></div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelConfirm" class="btn" type="button">Cancel</button>
+                <button id="confirmTrain" class="btn primary" type="button">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-backdrop" id="loadingOverlay" aria-hidden="true">
+        <div class="loading-card">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Training QAOA...</p>
+        </div>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
 </body>
 
 </html>

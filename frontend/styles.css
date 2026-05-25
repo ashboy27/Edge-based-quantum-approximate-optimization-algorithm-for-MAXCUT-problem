@@ -74,6 +74,11 @@ body {
     border-radius: 999px;
     background: #ece8e0;
     border: 1px solid var(--line);
+    margin-bottom: 10px;
+}
+
+.input-panel > .control-group {
+    margin-top: 6px;
 }
 
 .mode-btn {
@@ -95,18 +100,23 @@ body {
     display: grid;
     grid-template-columns: minmax(240px, 1fr) 2fr;
     gap: 20px;
-    margin-top: 18px;
+    margin-top: 10px;
+    align-items: stretch;
 }
 
 .input-controls {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    height: 100%;
 }
 
 .input-canvas {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0px;
+    min-height: 520px;
+    height: 100%;
 }
 
 .canvas-header,
@@ -115,6 +125,14 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 6px;
+}
+
+.canvas-header h2,
+.preview-header h2,
+.results-header h2 {
+    margin: 0;
+    font-size: 1.05rem;
 }
 
 .control-group {
@@ -148,6 +166,7 @@ input[type="range"] {
 
 textarea {
     resize: vertical;
+    min-height: 220px;
 }
 
 .btn {
@@ -192,6 +211,8 @@ textarea {
     border-radius: 16px;
     border: 1px solid var(--line);
     background: #fdfbf7;
+    flex: 1;
+    min-height: 320px;
 }
 
 .results {

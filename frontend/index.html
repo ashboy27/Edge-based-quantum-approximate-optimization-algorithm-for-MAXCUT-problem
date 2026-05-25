@@ -17,10 +17,10 @@
     <div class="page">
         <header class="hero minimal">
             <div>
-                
+
                 <h1>Quantum Approximate Optimization Algorithm for Unweighted MAX-CUT</h1>
                 <p class="subhead">
-                    Choose your input style, confirm the parameters, and then train.
+                    Compare methods of spanning tree on Variational Quantum Eigensolver (VQE) applied to the unweighted MAX-CUT problem.
                 </p>
             </div>
         </header>
@@ -32,16 +32,16 @@
                     <button class="mode-btn" data-mode="draw" type="button">Draw graph</button>
                 </div>
 
+                <div class="control-group">
+                    <label class="switch">
+                        <input id="zeroBasedToggle" type="checkbox" checked />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="switch-label">0-based labels</span>
+                </div>
+
                 <div class="input-grid">
                     <div class="input-controls">
-                        <div class="control-group">
-                            <label class="switch">
-                                <input id="zeroBasedToggle" type="checkbox" checked />
-                                <span class="slider"></span>
-                            </label>
-                            <span class="switch-label">0-based labels</span>
-                        </div>
-
                         <div class="control-group mode-panel is-hidden" data-mode-panel="draw">
                             <div class="control-row">
                                 <button id="addNodeBtn" class="btn primary" type="button">Add node</button>

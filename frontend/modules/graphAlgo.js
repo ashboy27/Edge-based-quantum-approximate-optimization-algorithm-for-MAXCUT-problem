@@ -30,6 +30,15 @@ export function buildSpanningTreeEdges(nodeCount, edges) {
   return treeEdges;
 }
 
+export function buildStarTreeEdges(nodeCount) {
+  if (nodeCount <= 1) return [];
+  const treeEdges = [];
+  for (let i = 1; i < nodeCount; i += 1) {
+    treeEdges.push([0, i]);
+  }
+  return treeEdges;
+}
+
 export function normalizeEdgesForPayload(edges, zeroBased) {
   const base = zeroBased ? 0 : 1;
   return Array.from(edges).map((key) => {

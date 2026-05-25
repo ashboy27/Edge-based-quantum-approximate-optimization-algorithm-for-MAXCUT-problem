@@ -100,17 +100,17 @@
             </div>
             <div class="preview-grid">
                 <div class="preview-card">
-                    <h3>Star initialization</h3>
+                        <h3>Star</h3>
                     <canvas class="treeCanvas" id="previewStarTree" width="380" height="240"></canvas>
                 </div>
                 <div class="preview-card">
-                    <h3>Heuristic initialization</h3>
+                        <h3>Heuristic</h3>
                     <canvas class="treeCanvas" id="previewHeurTree" width="380" height="240"></canvas>
                 </div>
             </div>
             <div class="inline-loading" id="inlineLoading" hidden>
                 <div class="spinner" aria-hidden="true"></div>
-                <p>Training QAOA...</p>
+                <p id="inlineLoadingText">Running QAOA...</p>
             </div>
         </section>
 
@@ -122,7 +122,7 @@
 
             <div class="results-grid">
                 <div class="result-card" id="starCard">
-                    <h3>Star initialization</h3>
+                    <h3>Star</h3>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="starHist"></div>
@@ -134,7 +134,7 @@
                 </div>
 
                 <div class="result-card" id="heurCard">
-                    <h3>Heuristic initialization</h3>
+                    <h3>Heuristic</h3>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="heurHist"></div>

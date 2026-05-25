@@ -35,6 +35,7 @@ const resultsSection = document.getElementById("resultsSection");
 const previewStarTree = document.getElementById("previewStarTree");
 const previewHeurTree = document.getElementById("previewHeurTree");
 const inlineLoading = document.getElementById("inlineLoading");
+const inlineLoadingText = document.getElementById("inlineLoadingText");
 
 const confirmModal = document.getElementById("confirmModal");
 const cancelConfirm = document.getElementById("cancelConfirm");
@@ -199,8 +200,11 @@ function closeConfirmModal() {
   confirmModal.setAttribute("aria-hidden", "true");
 }
 
-function setLoading(isLoading) {
+function setLoading(isLoading, message) {
   inlineLoading.hidden = !isLoading;
+  if (message) {
+    inlineLoadingText.textContent = message;
+  }
 }
 
 function validateGraph() {
@@ -215,6 +219,36 @@ function showPreviewSection() {
   previewSection.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+async function initializeSpanningTrees() {
+  const payload = {
+    nodeCount: state.nodes.length,
+    edges: normalizeEdgesForPayload(state.edges, state.zeroBased),
+    zeroBased: state.zeroBased,
+  };
+
+  const res = await fetch("/preview", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || "Preview failed.");
+  }
+
+  const data = await res.json();
+  data.results.forEach((result) => {
+    if (result.mode === "star") {
+      drawTree(previewStarTree, state.nodes, result.treeEdges, state.zeroBased);
+    } else {
+      drawTree(previewHeurTree, state.nodes, result.treeEdges, state.zeroBased);
+    }
+  });
+
+  updatePreviewStatus("Spanning trees ready.");
+}
+
 async function trainGraph() {
   const payload = {
     nodeCount: state.nodes.length,
@@ -227,8 +261,7 @@ async function trainGraph() {
 
   trainBtn.disabled = true;
   resultsSection.hidden = true;
-  resultStatus.textContent = "Training QAOA...";
-  setLoading(true);
+  resultStatus.textContent = "Running QAOA...";
 
   try {
     const res = await fetch("/evaluate", {
@@ -257,7 +290,6 @@ async function trainGraph() {
         drawLineChart(heurRatio, result.approxRatios);
       }
     });
-    updatePreviewStatus("Spanning trees ready.");
   } catch (err) {
     resultsSection.hidden = false;
     resultStatus.textContent = err.message;
@@ -319,7 +351,16 @@ cancelConfirm.addEventListener("click", closeConfirmModal);
 confirmTrain.addEventListener("click", () => {
   closeConfirmModal();
   showPreviewSection();
-  trainGraph();
+  updatePreviewStatus("Initializing spanning trees...");
+  initializeSpanningTrees()
+    .then(() => {
+      setLoading(true, "Running QAOA...");
+      trainGraph();
+    })
+    .catch((err) => {
+      setLoading(false);
+      updatePreviewStatus(err.message);
+    });
 });
 
 setMode("paste");

@@ -20,6 +20,12 @@ class EvaluateRequest(BaseModel):
     maxIter: int = 60
 
 
+class PreviewRequest(BaseModel):
+    nodeCount: int
+    edges: list[tuple[int, int]]
+    zeroBased: bool = True
+
+
 app = FastAPI(title="Edge-Based QAOA Max-Cut")
 
 frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
@@ -49,6 +55,11 @@ def validate_evaluate_request(request_payload: EvaluateRequest) -> None:
         raise HTTPException(status_code=400, detail="shots must be between 128 and 8192.")
     if not (10 <= request_payload.maxIter <= 300):
         raise HTTPException(status_code=400, detail="maxIter must be between 10 and 300.")
+
+
+def validate_preview_request(request_payload: PreviewRequest) -> None:
+    if request_payload.nodeCount < 2:
+        raise HTTPException(status_code=400, detail="nodeCount must be >= 2.")
 
 
 def build_graph(
@@ -198,4 +209,37 @@ def evaluate(request_payload: EvaluateRequest) -> dict[str, object]:
         "edgeCount": graph_built_from_user_input_normalized.number_of_edges(),
         "maxCut": actual_max_cut_dervied_from_brute_force,
         "results": results,
+    }
+
+
+@app.post("/preview")
+def preview(request_payload: PreviewRequest) -> dict[str, object]:
+    validate_preview_request(request_payload)
+
+    graph_built_from_user_input_normalized = build_graph(
+        request_payload.nodeCount,
+        request_payload.edges,
+        request_payload.zeroBased,
+    )
+
+    star_tree, star_root = build_star_tree(graph_built_from_user_input_normalized)
+    heuristic_tree, heuristic_root = build_greedy_heuristic_spanning_tree(
+        graph_built_from_user_input_normalized,
+    )
+
+    return {
+        "nodeCount": request_payload.nodeCount,
+        "edgeCount": graph_built_from_user_input_normalized.number_of_edges(),
+        "results": [
+            {
+                "mode": "star",
+                "root": star_root,
+                "treeEdges": [[node_u, node_v] for node_u, node_v in star_tree.edges()],
+            },
+            {
+                "mode": "heuristic",
+                "root": heuristic_root,
+                "treeEdges": [[node_u, node_v] for node_u, node_v in heuristic_tree.edges()],
+            },
+        ],
     }

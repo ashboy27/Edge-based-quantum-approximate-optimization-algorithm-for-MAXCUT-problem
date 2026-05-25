@@ -248,6 +248,10 @@ textarea {
     font-weight: 600;
 }
 
+.inline-loading[hidden] {
+    display: none;
+}
+
 .results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

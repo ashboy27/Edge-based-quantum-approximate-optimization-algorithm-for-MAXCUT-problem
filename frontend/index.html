@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edge-Based QAOA Max-Cut</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+</head>
+
+<body>
+    <div class="page">
+        <header class="hero">
+            <div>
+                <h1>QAOA Max-Cut Studio</h1>
+                <p class="subhead">
+                    Draw a graph, choose indexing, and compare star vs heuristic spanning trees
+                    with QAOA results.
+                </p>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section class="panel controls">
+                <h2>Graph Builder</h2>
+                <div class="control-group">
+                    <label class="switch">
+                        <input id="zeroBasedToggle" type="checkbox" checked />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="switch-label">0-based labels</span>
+                </div>
+
+                <div class="control-row">
+                    <button id="addNodeBtn" class="btn primary">Add Node</button>
+                    <button id="removeNodeBtn" class="btn">Remove Node</button>
+                </div>
+
+                <div class="control-row">
+                    <button id="addEdgeBtn" class="btn accent">Add Edge</button>
+                    <button id="removeEdgeBtn" class="btn">Remove Edge</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="pMax">Max QAOA level (p)</label>
+                    <input id="pMax" type="range" min="1" max="5" value="3" />
+                    <div class="range-value">p = <span id="pMaxValue">3</span></div>
+                </div>
+
+                <div class="control-group">
+                    <label for="shots">Shots</label>
+                    <input id="shots" type="number" min="128" max="8192" value="1024" />
+                </div>
+
+                <div class="control-group">
+                    <label for="maxIter">Optimizer iterations (COBYLA)</label>
+                    <input id="maxIter" type="number" min="10" max="300" value="60" />
+                </div>
+
+                <button id="evaluateBtn" class="btn primary wide">Evaluate</button>
+
+                <div class="hint">
+                    <p>Click nodes to select. Select two nodes to add or remove an edge.</p>
+                    <p>Removing a node renumbers the remaining nodes.</p>
+                </div>
+            </section>
+
+            <section class="panel canvas-area">
+                <div class="canvas-header">
+                    <h2>Draw Graph</h2>
+                    <div class="status" id="statusText">No nodes yet.</div>
+                </div>
+                <canvas id="graphCanvas" width="880" height="520"></canvas>
+            </section>
+        </main>
+
+        <section class="panel results">
+            <div class="results-header">
+                <h2>Results</h2>
+                <div class="status" id="resultStatus">Run evaluation to see output.</div>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-card" id="starCard">
+                    <h3>Star Initialization</h3>
+                    <canvas class="treeCanvas" id="starTree" width="380" height="240"></canvas>
+                    <div class="plot">
+                        <h4>Histogram (p-max)</h4>
+                        <div class="histogram" id="starHist"></div>
+                    </div>
+                    <div class="plot">
+                        <h4>Approximation Ratio</h4>
+                        <canvas class="lineChart" id="starRatio" width="380" height="160"></canvas>
+                    </div>
+                </div>
+
+                <div class="result-card" id="heurCard">
+                    <h3>Heuristic Initialization</h3>
+                    <canvas class="treeCanvas" id="heurTree" width="380" height="240"></canvas>
+                    <div class="plot">
+                        <h4>Histogram (p-max)</h4>
+                        <div class="histogram" id="heurHist"></div>
+                    </div>
+                    <div class="plot">
+                        <h4>Approximation Ratio</h4>
+                        <canvas class="lineChart" id="heurRatio" width="380" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

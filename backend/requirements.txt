@@ -1,0 +1,8 @@
+qiskit>=2.1.0
+qiskit-aer>=0.17.0
+networkx
+numpy
+scipy
+matplotlib
+fastapi
+uvicorn

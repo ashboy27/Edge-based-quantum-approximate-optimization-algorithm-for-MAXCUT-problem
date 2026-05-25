@@ -1,0 +1,312 @@
+:root {
+    --black: #000;
+    --white: #fff;
+    --plot-1: #d4866c;
+    --plot-2: #1b4b7a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Source Sans 3", sans-serif;
+    background: var(--white);
+    color: var(--black);
+}
+
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 28px 60px;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.hero h1 {
+    margin: 8px 0 10px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(2.2rem, 3vw, 3.2rem);
+    letter-spacing: -0.02em;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    font-size: 0.72rem;
+    color: var(--black);
+}
+
+.subhead {
+    margin: 0;
+    color: var(--black);
+    max-width: 520px;
+    line-height: 1.45;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chip {
+    background: var(--white);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--black);
+    font-weight: 600;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 2.2fr;
+    gap: 22px;
+    margin-bottom: 24px;
+}
+
+.panel {
+    background: var(--white);
+    border-radius: 22px;
+    padding: 22px;
+    border: 1px solid var(--black);
+}
+
+.controls h2,
+.canvas-area h2,
+.results h2 {
+    font-family: "Space Grotesk", sans-serif;
+    margin: 0 0 16px;
+}
+
+.control-group {
+    margin-bottom: 16px;
+}
+
+.control-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+label {
+    font-weight: 600;
+    color: var(--black);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.btn {
+    background: var(--white);
+    border: 1px solid var(--black);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: none;
+}
+
+.btn.primary {
+    background: var(--black);
+    color: var(--white);
+    border: 1px solid var(--black);
+}
+
+.btn.accent {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--black);
+}
+
+.btn.wide {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.hint {
+    border-top: 1px dashed var(--black);
+    margin-top: 18px;
+    padding-top: 14px;
+    font-size: 0.9rem;
+    color: var(--black);
+}
+
+.canvas-area {
+    position: relative;
+}
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status {
+    font-size: 0.85rem;
+    color: var(--black);
+    font-weight: 600;
+}
+
+#graphCanvas {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--black);
+    background: var(--white);
+    margin-top: 12px;
+}
+
+.results {
+    margin-top: 12px;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.result-card {
+    background: var(--white);
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid var(--black);
+}
+
+.result-card h3 {
+    margin-top: 0;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+.treeCanvas,
+.lineChart {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--black);
+    background: var(--white);
+}
+
+.plot h4 {
+    margin: 12px 0 8px;
+    font-size: 0.95rem;
+}
+
+.histogram {
+    display: grid;
+    gap: 6px;
+}
+
+.hist-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hist-label {
+    min-width: 54px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.85rem;
+}
+
+.hist-value {
+    flex: 1;
+    background: var(--white);
+    border: 1px solid var(--black);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    height: 14px;
+}
+
+.hist-value span {
+    display: block;
+    height: 100%;
+    background: var(--plot-1);
+}
+
+.hist-count {
+    font-size: 0.8rem;
+    color: var(--black);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--white);
+    border: 1px solid var(--black);
+    border-radius: 999px;
+    transition: 0.2s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--black);
+    transition: 0.2s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--black);
+}
+
+input:checked+.slider:before {
+    background-color: var(--white);
+    transform: translateX(20px);
+}
+
+.switch-label {
+    vertical-align: middle;
+    font-weight: 600;
+}
+
+.range-value {
+    font-weight: 600;
+    color: var(--black);
+}
+
+@media (max-width: 900px) {
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}

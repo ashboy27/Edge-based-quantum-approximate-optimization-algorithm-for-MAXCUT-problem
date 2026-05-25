@@ -323,5 +323,5 @@ confirmTrain.addEventListener("click", () => {
   trainGraph();
 });
 
-setMode("draw");
-updateStatus("No nodes yet.");
+setMode("paste");
+updateStatus("Paste edges to build a graph.");

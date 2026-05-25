@@ -28,8 +28,8 @@
         <main class="input-shell">
             <section class="panel input-panel">
                 <div class="mode-toggle" role="tablist" aria-label="Input mode">
-                    <button class="mode-btn is-active" data-mode="draw" type="button">Draw graph</button>
-                    <button class="mode-btn" data-mode="paste" type="button">Paste edges</button>
+                    <button class="mode-btn is-active" data-mode="paste" type="button">Paste edges</button>
+                    <button class="mode-btn" data-mode="draw" type="button">Draw graph</button>
                 </div>
 
                 <div class="input-grid">
@@ -42,7 +42,7 @@
                             <span class="switch-label">0-based labels</span>
                         </div>
 
-                        <div class="control-group mode-panel" data-mode-panel="draw">
+                        <div class="control-group mode-panel is-hidden" data-mode-panel="draw">
                             <div class="control-row">
                                 <button id="addNodeBtn" class="btn primary" type="button">Add node</button>
                                 <button id="removeNodeBtn" class="btn" type="button">Remove node</button>
@@ -54,7 +54,7 @@
                             <div class="hint">Click nodes to select. Select two nodes to add or remove an edge.</div>
                         </div>
 
-                        <div class="control-group mode-panel is-hidden" data-mode-panel="paste">
+                        <div class="control-group mode-panel" data-mode-panel="paste">
                             <label for="edgeList">Edge list</label>
                             <textarea id="edgeList" rows="8" placeholder="0 1\n1 2\n2 3"></textarea>
                             <div class="hint">Use spaces, commas, or hyphens between node labels.</div>

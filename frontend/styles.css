@@ -275,7 +275,11 @@ textarea {
 .lineChart {
     width: 100%;
     border-radius: 14px;
-    border: 1px solid var(--line);
+    /* Only show left and bottom borders so chart axes are not boxed in */
+    border-top: none;
+    border-right: none;
+    border-left: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
     background: #fdfbf7;
 }
 

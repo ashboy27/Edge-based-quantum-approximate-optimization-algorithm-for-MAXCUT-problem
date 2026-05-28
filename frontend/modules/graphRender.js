@@ -110,18 +110,44 @@ export function drawLineChart(canvasEl, values) {
   const w = canvasEl.clientWidth - padding * 2;
   const h = canvasEl.clientHeight - padding * 2;
   const vals = values.map((v) => (v === null ? 0 : v));
-  const maxV = Math.max(...vals, 1);
 
   const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
   lctx.strokeStyle = "#121111";
   lctx.lineWidth = 1;
-  lctx.strokeRect(padding, padding, w, h);
+  lctx.beginPath();
+  // left axis
+  lctx.moveTo(padding, padding);
+  lctx.lineTo(padding, padding + h);
+  // bottom axis
+  lctx.moveTo(padding, padding + h);
+  lctx.lineTo(padding + w, padding + h);
+  lctx.stroke();
+
+  // Y-axis ticks and labels (0.00 .. 1.00)
+  lctx.fillStyle = "#121111";
+  lctx.font = "500 11px 'Space Grotesk', sans-serif";
+  lctx.textAlign = "right";
+  lctx.textBaseline = "middle";
+  const tickCount = 4; // will show 0,0.25,0.5,0.75,1
+  for (let ti = 0; ti <= tickCount; ti += 1) {
+    const v = ti / tickCount;
+    const yy = padding + h - v * h;
+    // small tick
+    lctx.beginPath();
+    lctx.moveTo(padding - 6, yy);
+    lctx.lineTo(padding, yy);
+    lctx.stroke();
+    // label
+    lctx.fillText(v.toFixed(2), padding - 8, yy);
+  }
 
   lctx.beginPath();
   vals.forEach((v, i) => {
+    // clamp input values to [0,1]
+    const vv = Math.min(Math.max(v, 0), 1);
     const x = padding + (w * i) / (vals.length - 1 || 1);
-    const y = padding + h - (v / maxV) * h;
+    const y = padding + h - (vv - 0) / (1 - 0 || 1) * h;
     const safeX = clamp(x, padding + pointRadius, padding + w - pointRadius);
     const safeY = clamp(y, padding + pointRadius, padding + h - pointRadius);
     if (i === 0) lctx.moveTo(safeX, safeY);
@@ -135,8 +161,9 @@ export function drawLineChart(canvasEl, values) {
   lctx.fillStyle = "#1b4b7a";
   lctx.font = "600 11px 'Space Grotesk', sans-serif";
   vals.forEach((v, i) => {
+    const vv = Math.min(Math.max(v, 0), 1);
     const x = padding + (w * i) / (vals.length - 1 || 1);
-    const y = padding + h - (v / maxV) * h;
+    const y = padding + h - (vv - 0) / (1 - 0 || 1) * h;
     const safeX = clamp(x, padding + pointRadius, padding + w - pointRadius);
     const safeY = clamp(y, padding + pointRadius, padding + h - pointRadius);
     lctx.beginPath();
@@ -144,7 +171,9 @@ export function drawLineChart(canvasEl, values) {
     lctx.fill();
 
     const label = `p${i + 1}`;
-    lctx.fillText(label, safeX, canvasEl.clientHeight - 8);
+    lctx.textAlign = "center";
+    lctx.textBaseline = "top";
+    lctx.fillText(label, safeX, padding + h + 6);
   });
 }
 

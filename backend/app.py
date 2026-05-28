@@ -11,7 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .edge_qaoa import optimize_qaoa, sample_solution
-from .tree_generation import build_greedy_heuristic_spanning_tree, build_star_tree
+from .tree_generation import (
+    build_greedy_heuristic_spanning_tree,
+    build_star_tree,
+    evaluate_cnot_cost,
+)
 
 class EvaluateRequest(BaseModel):
     nodeCount: int
@@ -30,8 +34,8 @@ class PreviewRequest(BaseModel):
 
 app = FastAPI(title="Edge-Based QAOA Max-Cut")
 
-# basic logging to console for debugging optimizer/sampling per-p
-logging.basicConfig(level=logging.INFO)
+# Reduce default logging to avoid cluttering output (debug logs kept at debug level)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
@@ -159,7 +163,7 @@ def evaluate_mode(
             params = getattr(optimization_result, "x", None)
         except Exception:
             params = None
-        logger.info(
+        logger.debug(
             "q=%d params=%s most_freq=%s sampled_cut=%s",
             qaoa_depth,
             np.array2string(np.array(params), precision=3) if params is not None else "None",
@@ -183,10 +187,13 @@ def evaluate_mode(
         if qaoa_depth == maximum_qaoa_depth:
             histogram_by_bitstring = bitstring_counts
 
+    cnot_count = evaluate_cnot_cost(spanning_tree, graph_built_from_user_input_normalized)
+
     return {
         "mode": mode,
         "root": root_node,
         "treeEdges": [[node_u, node_v] for node_u, node_v in spanning_tree.edges()],
+        "cnotCount": cnot_count,
         "approxRatios": approximation_ratios,
         "sampledCuts": sampled_cut_values,
         "histogram": histogram_by_bitstring,

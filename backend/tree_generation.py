@@ -41,63 +41,57 @@ def build_star_tree(input_graph: nx.Graph) -> tuple[nx.Graph, int]:
             star_tree.add_edge(central_root_node, node)
     return star_tree, central_root_node
 
+def evaluate_cnot_cost(tree: nx.Graph, original_graph: nx.Graph) -> int:
+    """
+    Calculates the exact QAOA overhead: sum of 2*(l_jk - 1) 
+    for all edges in the original graph.
+    """
+    # Precomputing all shortest paths in a tree is highly efficient
+    path_lengths = dict(nx.all_pairs_shortest_path_length(tree))
+    cost = 0
+    
+    for u, v in original_graph.edges():
+        cost += 2 * (path_lengths[u][v] - 1)
+        
+    return cost
 
 def build_greedy_heuristic_spanning_tree(input_graph: nx.Graph) -> tuple[nx.Graph, int]:
     """
     Our contribution
     """
-    root_node = pick_root(input_graph)
-    heuristic_spanning_tree = nx.Graph()
-    heuristic_spanning_tree.add_nodes_from(input_graph.nodes())
-
-    visited_nodes: set[int] = set()
-    visited_nodes.add(root_node)
-
-    node_depths: dict[int, int] = {}
-    node_depths[root_node] = 0
-
-    neighbor_sets: dict[int, set[int]] = {}
-    for node in input_graph.nodes():
-        neighbor_sets[node] = set()
-        for neighbor_node in input_graph.neighbors(node):
-            neighbor_sets[node].add(neighbor_node)
-
-    while len(visited_nodes) < input_graph.number_of_nodes():
-        best_candidate = None
-        best_candidate_score = None
-        best_parent_node = None
-        best_child_node = None
-
-        for current_node in list(visited_nodes):
-            for candidate_node in neighbor_sets[current_node]:
-                if candidate_node in visited_nodes:
-                    continue
-
-                shared_neighbors = set()
-                for neighbor_node in neighbor_sets[current_node]:
-                    if neighbor_node in neighbor_sets[candidate_node]:
-                        shared_neighbors.add(neighbor_node)
-
-                candidate_degree = input_graph.degree(candidate_node)
-                current_depth = node_depths[current_node]
-
-                score = 3.0 * candidate_degree
-                score += len(shared_neighbors)
-                score -= 0.4 * current_depth
-
-                if best_candidate_score is None or score > best_candidate_score:
-                    best_candidate_score = score
-                    best_parent_node = current_node
-                    best_child_node = candidate_node
-                    best_candidate = (best_candidate_score, best_parent_node, best_child_node)
-
-        if best_candidate is None:
-            raise ValueError("Failed to build spanning tree. Check graph connectivity.")
-
-        parent_node = best_parent_node
-        child_node = best_child_node
-        heuristic_spanning_tree.add_edge(parent_node, child_node)
-        visited_nodes.add(child_node)
-        node_depths[child_node] = node_depths[parent_node] + 1
-
-    return heuristic_spanning_tree, root_node
+    degrees = dict(input_graph.degree())
+    root_node = max(degrees, key=degrees.get)
+    current_tree = nx.bfs_tree(input_graph, root_node).to_undirected()
+    current_cost = evaluate_cnot_cost(current_tree, input_graph)
+    improved = True
+    while improved:
+        improved = False
+        non_tree_edges = [e for e in input_graph.edges() if not current_tree.has_edge(*e)]
+        
+        for u, v in non_tree_edges:
+            path = nx.shortest_path(current_tree, source=u, target=v)
+            cycle_edges = [(path[i], path[i+1]) for i in range(len(path) - 1)]
+            
+            best_swap_out_edge = None
+            best_cost = current_cost
+            current_tree.add_edge(u, v)
+            for cu, cv in cycle_edges:
+                current_tree.remove_edge(cu, cv)
+                new_cost = evaluate_cnot_cost(current_tree, input_graph)
+                
+                if new_cost < best_cost:
+                    best_cost = new_cost
+                    best_swap_out_edge = (cu, cv)
+                    
+                current_tree.add_edge(cu, cv)
+            
+            if best_swap_out_edge:
+                current_tree.remove_edge(*best_swap_out_edge)
+                current_cost = best_cost
+                improved = True
+                break 
+            else:
+                # Revert the temporary addition; this swap doesn't help
+                current_tree.remove_edge(u, v)
+                
+    return current_tree, root_node

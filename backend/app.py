@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import logging
 
 import networkx as nx
+import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -27,6 +29,10 @@ class PreviewRequest(BaseModel):
 
 
 app = FastAPI(title="Edge-Based QAOA Max-Cut")
+
+# basic logging to console for debugging optimizer/sampling per-p
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
 if frontend_dir.exists():
@@ -147,6 +153,18 @@ def evaluate_mode(
             root_node,
             qaoa_depth=qaoa_depth,
             shots=number_of_shots,
+        )
+        # Log debug info for each depth to troubleshoot identical results
+        try:
+            params = getattr(optimization_result, "x", None)
+        except Exception:
+            params = None
+        logger.info(
+            "q=%d params=%s most_freq=%s sampled_cut=%s",
+            qaoa_depth,
+            np.array2string(np.array(params), precision=3) if params is not None else "None",
+            most_frequent_bitstring,
+            sampled_cut_value,
         )
         if most_frequent_bitstring is None:
             raise ValueError("Sampling produced no bitstrings to evaluate.")

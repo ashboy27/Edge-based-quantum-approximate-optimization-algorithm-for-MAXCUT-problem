@@ -139,7 +139,7 @@ def sample_solution(
     shots: int = 4096,
 ):
     """
-    Paper step 5: measure the final state and compute a cut.
+    Measure state and run for many iterations to get a distribution of bitstrings.
     """
     circuit = build_qaoa_circuit(input_graph, spanning_tree, qaoa_depth, parameter_vector)
     # Add measurement operations to every qubit.
@@ -172,8 +172,7 @@ def sample_solution(
 
 def estimated_cnot_per_layer(input_graph: nx.Graph, spanning_tree: nx.Graph) -> int:
     """
-    Paper-style CNOT estimate:
-    N(HP) = sum 2(l_jk - 1)
+    This calculation is mentioned in paper
     """
     tree_edge_index_map = tree_edge_index(spanning_tree)
     total_cnot_estimate = 0

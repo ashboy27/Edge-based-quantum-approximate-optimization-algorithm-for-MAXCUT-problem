@@ -6,7 +6,7 @@ import logging
 import networkx as nx
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -14,6 +14,7 @@ from .edge_qaoa import optimize_qaoa, sample_solution
 from .tree_generation import (
     build_greedy_heuristic_spanning_tree,
     build_star_tree,
+    compute_tree_depth,
     evaluate_cnot_cost,
 )
 
@@ -49,14 +50,6 @@ def index() -> FileResponse:
     if not index_path.exists():
         raise HTTPException(status_code=404, detail="Frontend not found.")
     return FileResponse(str(index_path))
-
-
-@app.get("/flutter_service_worker.js")
-def flutter_service_worker() -> Response:
-    return Response(status_code=204)
-
-
-
 
 
 def validate_evaluate_request(request_payload: EvaluateRequest) -> None:
@@ -135,6 +128,7 @@ def evaluate_mode(
     approximation_ratios: list[float | None] = []
     sampled_cut_values: list[float] = []
     histogram_by_bitstring: dict[str, int] = {}
+    last_transpiled_circuit = None
 
     for qaoa_depth in range(1, maximum_qaoa_depth + 1):
         optimization_result = optimize_qaoa(
@@ -159,14 +153,10 @@ def evaluate_mode(
             shots=number_of_shots,
         )
         # Log debug info for each depth to troubleshoot identical results
-        try:
-            params = getattr(optimization_result, "x", None)
-        except Exception:
-            params = None
         logger.debug(
             "q=%d params=%s most_freq=%s sampled_cut=%s",
             qaoa_depth,
-            np.array2string(np.array(params), precision=3) if params is not None else "None",
+            np.array2string(np.array(optimization_result.x), precision=3),
             most_frequent_bitstring,
             sampled_cut_value,
         )
@@ -186,14 +176,22 @@ def evaluate_mode(
 
         if qaoa_depth == maximum_qaoa_depth:
             histogram_by_bitstring = bitstring_counts
+            last_transpiled_circuit = transpiled_circuit
 
     cnot_count = evaluate_cnot_cost(spanning_tree, graph_built_from_user_input_normalized)
+    tree_depth = compute_tree_depth(spanning_tree, root_node)
+
+    circuit_depth = last_transpiled_circuit.depth() if last_transpiled_circuit else 0
+    total_gate_count = last_transpiled_circuit.size() if last_transpiled_circuit else 0
 
     return {
         "mode": mode,
         "root": root_node,
         "treeEdges": [[node_u, node_v] for node_u, node_v in spanning_tree.edges()],
         "cnotCount": cnot_count,
+        "circuitDepth": circuit_depth,
+        "totalGateCount": total_gate_count,
+        "treeDepth": tree_depth,
         "approxRatios": approximation_ratios,
         "sampledCuts": sampled_cut_values,
         "histogram": histogram_by_bitstring,

@@ -51,6 +51,14 @@ const starHist = document.getElementById("starHist");
 const heurHist = document.getElementById("heurHist");
 const starRatio = document.getElementById("starRatio");
 const heurRatio = document.getElementById("heurRatio");
+const starCnot = document.getElementById("starCnot");
+const heurCnot = document.getElementById("heurCnot");
+const starCircuitDepth = document.getElementById("starCircuitDepth");
+const heurCircuitDepth = document.getElementById("heurCircuitDepth");
+const starGateCount = document.getElementById("starGateCount");
+const heurGateCount = document.getElementById("heurGateCount");
+const starTreeDepth = document.getElementById("starTreeDepth");
+const heurTreeDepth = document.getElementById("heurTreeDepth");
 
 function updateStatus(message) {
   statusText.textContent =
@@ -276,19 +284,28 @@ async function trainGraph() {
     }
 
     const data = await res.json();
+    console.log("/evaluate response:", data);
     resultsSection.hidden = false;
     resultStatus.textContent = `Results ready. Max-cut ${data.maxCut ?? "(n>12)"}`;
 
     data.results.forEach((result) => {
-      if (result.mode === "star") {
-        drawTree(previewStarTree, state.nodes, result.treeEdges, state.zeroBased);
-        renderHistogram(starHist, result.histogram);
-        drawLineChart(starRatio, result.approxRatios);
-      } else {
-        drawTree(previewHeurTree, state.nodes, result.treeEdges, state.zeroBased);
-        renderHistogram(heurHist, result.histogram);
-        drawLineChart(heurRatio, result.approxRatios);
-      }
+      const isStar = result.mode === "star";
+      const treeCanvas = isStar ? previewStarTree : previewHeurTree;
+      const histEl = isStar ? starHist : heurHist;
+      const ratioEl = isStar ? starRatio : heurRatio;
+      const cnotEl = isStar ? starCnot : heurCnot;
+      const depthEl = isStar ? starCircuitDepth : heurCircuitDepth;
+      const gateEl = isStar ? starGateCount : heurGateCount;
+      const treeDepthEl = isStar ? starTreeDepth : heurTreeDepth;
+
+      drawTree(treeCanvas, state.nodes, result.treeEdges, state.zeroBased);
+      renderHistogram(histEl, result.histogram);
+      drawLineChart(ratioEl, result.approxRatios);
+
+      cnotEl.textContent = result.cnotCount ?? "-";
+      depthEl.textContent = result.circuitDepth ?? "-";
+      gateEl.textContent = result.totalGateCount ?? "-";
+      treeDepthEl.textContent = result.treeDepth ?? "-";
     });
   } catch (err) {
     resultsSection.hidden = false;

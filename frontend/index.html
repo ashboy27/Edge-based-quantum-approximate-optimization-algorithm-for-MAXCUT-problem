@@ -123,7 +123,25 @@
 
             <div class="results-grid">
                 <div class="result-card" id="starCard">
-                    <h3>Star</h3>
+                    <h3>Star <span class="card-badge">Paper baseline</span></h3>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="metric-label">CNOT Cost</span>
+                            <strong class="metric-value" id="starCnot">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Circuit Depth</span>
+                            <strong class="metric-value" id="starCircuitDepth">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Gate Count</span>
+                            <strong class="metric-value" id="starGateCount">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Tree Depth</span>
+                            <strong class="metric-value" id="starTreeDepth">-</strong>
+                        </div>
+                    </div>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="starHist"></div>
@@ -135,7 +153,25 @@
                 </div>
 
                 <div class="result-card" id="heurCard">
-                    <h3>Heuristic</h3>
+                    <h3>Heuristic <span class="card-badge accent">Our approach</span></h3>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="metric-label">CNOT Cost</span>
+                            <strong class="metric-value" id="heurCnot">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Circuit Depth</span>
+                            <strong class="metric-value" id="heurCircuitDepth">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Gate Count</span>
+                            <strong class="metric-value" id="heurGateCount">-</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Tree Depth</span>
+                            <strong class="metric-value" id="heurTreeDepth">-</strong>
+                        </div>
+                    </div>
                     <div class="plot">
                         <h4>Histogram (p-max)</h4>
                         <div class="histogram" id="heurHist"></div>

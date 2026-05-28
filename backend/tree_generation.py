@@ -95,3 +95,12 @@ def build_greedy_heuristic_spanning_tree(input_graph: nx.Graph) -> tuple[nx.Grap
                 current_tree.remove_edge(u, v)
                 
     return current_tree, root_node
+
+
+def compute_tree_depth(tree: nx.Graph, root: int) -> int:
+    """
+    Maximum distance from the root to any leaf in the spanning tree.
+    Deeper trees produce longer CNOT chains in the edge-based QAOA circuit.
+    """
+    path_lengths = nx.single_source_shortest_path_length(tree, root)
+    return max(path_lengths.values())

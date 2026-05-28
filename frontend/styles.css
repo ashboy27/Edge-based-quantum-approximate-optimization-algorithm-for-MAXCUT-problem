@@ -205,8 +205,7 @@ textarea {
     font-weight: 600;
 }
 
-#graphCanvas,
-#previewTree {
+#graphCanvas {
     width: 100%;
     border-radius: 16px;
     border: 1px solid var(--line);
@@ -269,6 +268,58 @@ textarea {
 .result-card h3 {
     margin-top: 0;
     font-family: "Space Grotesk", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #ece8e0;
+    color: var(--muted);
+    font-family: "Source Sans 3", sans-serif;
+}
+
+.card-badge.accent {
+    background: var(--plot-2);
+    color: #fff;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.metric-item {
+    background: #fdfbf7;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.metric-value {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.35rem;
+    color: var(--ink);
 }
 
 .treeCanvas,

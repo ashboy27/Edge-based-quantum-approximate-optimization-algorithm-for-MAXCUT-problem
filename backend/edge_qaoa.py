@@ -10,7 +10,6 @@ from qiskit_aer import AerSimulator
 from .utils import (
     build_qaoa_circuit,
     cut_value_from_vertex_labels,
-    path_qubits,
     tree_edge_index,
 )
 
@@ -168,15 +167,4 @@ def sample_solution(
     cut_value = cut_value_from_vertex_labels(input_graph, vertex_labels)
 
     return bitstring_counts, best_bitstring, vertex_labels, cut_value, transpiled_circuit
-
-
-def estimated_cnot_per_layer(input_graph: nx.Graph, spanning_tree: nx.Graph) -> int:
-    """
-    This calculation is mentioned in paper
-    """
-    tree_edge_index_map = tree_edge_index(spanning_tree)
-    total_cnot_estimate = 0
-    for node_u, node_v in input_graph.edges():
-        path_length = len(path_qubits(node_u, node_v, spanning_tree, tree_edge_index_map))
-        total_cnot_estimate += 2 * (path_length - 1)
-    return total_cnot_estimate
+

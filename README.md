@@ -1,5 +1,6 @@
 # Topology-Aware Spanning Tree Initialization for the Edge-Based Quantum Approximate Optimization Algorithm 
 
+https://github.com/user-attachments/assets/07d7d29c-e4b2-4b39-9af0-ec9383a70865
 ## Description
 
 This project provides an interactive web app to test out the differences between a star-shape initialization and a topology aware initialization for spanning trees to approximate [MAX-CUT](https://www.cs.cmu.edu/afs/cs/academic/class/15854-f05/www/scribe/lec02.pdf). The repository contains our research paper which describes experiements and results in further detail.

@@ -65,6 +65,26 @@ function updateStatus(message) {
     message || `${state.nodes.length} nodes, ${state.edges.size} edges.`;
 }
 
+function updateRangeFill(rangeEl) {
+  const min = parseFloat(rangeEl.min || "0");
+  const max = parseFloat(rangeEl.max || "100");
+  const value = parseFloat(rangeEl.value || "0");
+  let percent = max === min ? 0 : ((value - min) / (max - min)) * 100;
+  if (value >= max) {
+    percent = 100;
+  } else if (percent < 0) {
+    percent = 0;
+  }
+  
+  const fillWidth = `calc(9px + ${percent}% - ${percent * 18 / 100}px)`;
+
+  if (percent >= 100) {
+    rangeEl.style.setProperty("--fill", "100%");
+    return;
+  }
+  rangeEl.style.setProperty("--fill", fillWidth);
+}
+
 function updatePreviewStatus(message) {
   previewStatus.textContent = message;
 }
@@ -143,6 +163,16 @@ function getNodeAt(x, y) {
     }
   }
   return null;
+}
+
+function getCanvasPoint(event, targetCanvas) {
+  const rect = targetCanvas.getBoundingClientRect();
+  const scaleX = targetCanvas.clientWidth / rect.width;
+  const scaleY = targetCanvas.clientHeight / rect.height;
+  return {
+    x: (event.clientX - rect.left) * scaleX,
+    y: (event.clientY - rect.top) * scaleY,
+  };
 }
 
 function toggleSelection(idx) {
@@ -286,7 +316,7 @@ async function trainGraph() {
     const data = await res.json();
     console.log("/evaluate response:", data);
     resultsSection.hidden = false;
-    resultStatus.textContent = `Results ready. Max-cut ${data.maxCut ?? "(n>12)"}`;
+    resultStatus.textContent = ``;
 
     data.results.forEach((result) => {
       const isStar = result.mode === "star";
@@ -317,17 +347,17 @@ async function trainGraph() {
   }
 }
 
-canvas.addEventListener("click", (event) => {
+function handleCanvasSelect(event) {
   if (state.mode !== "draw") return;
-  const rect = canvas.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width) * canvas.width;
-  const y = ((event.clientY - rect.top) / rect.height) * canvas.height;
+  const { x, y } = getCanvasPoint(event, canvas);
   const idx = getNodeAt(x, y);
   if (idx !== null) {
     toggleSelection(idx);
     refreshCanvas();
   }
-});
+}
+
+canvas.addEventListener("pointerdown", handleCanvasSelect);
 
 addNodeBtn.addEventListener("click", addNode);
 removeNodeBtn.addEventListener("click", removeNode);
@@ -353,6 +383,7 @@ zeroBasedToggle.addEventListener("change", (event) => {
 
 pMaxInput.addEventListener("input", (event) => {
   pMaxValue.textContent = event.target.value;
+  updateRangeFill(event.target);
 });
 
 trainBtn.addEventListener("click", () => {
@@ -382,3 +413,4 @@ confirmTrain.addEventListener("click", () => {
 
 setMode("paste");
 updateStatus("Paste edges to build a graph.");
+updateRangeFill(pMaxInput);
